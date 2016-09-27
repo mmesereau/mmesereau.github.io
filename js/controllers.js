@@ -401,12 +401,11 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
         if (newGame.input.activePointer.x > log.left && newGame.input.activePointer.x < log.right && newGame.input.activePointer.y > log.top && newGame.input.activePointer.y < log.bottom) {
           log.visible = false;
-          turn_text.visible = false;
         }
         else {
           log.visible = true;
-          turn_text.visible = true;
         }
+        turn_text.visible = false;
         if (digLine) {
           digLine.setTo(digLine.start.x, digLine.start.y, newGame.input.activePointer.x, newGame.input.activePointer.y);
         }
