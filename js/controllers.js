@@ -405,7 +405,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         else {
           log.visible = true;
         }
-        turn_text.visible = false;
         if (digLine) {
           digLine.setTo(digLine.start.x, digLine.start.y, newGame.input.activePointer.x, newGame.input.activePointer.y);
         }
