@@ -1,0 +1,5 @@
+<h3>{{SC.gameName}}</h3>
+<h3 ng-repeat="player in SC.presentPlayers">{{player}} is present.</h3>
+<div ng-show="SC.allPlayersPresent">
+  <h3>All players are present.  Beginning in {{SC.countdown}}.</h3>
+</div>

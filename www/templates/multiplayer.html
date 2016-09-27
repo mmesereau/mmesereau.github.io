@@ -1,0 +1,14 @@
+<div class="row">
+  <button ng-click="MC.newGame = true;">New Game</button>
+  <form ng-show="MC.newGame" ng-submit="MC.addGame()">
+    <input type="text" placeholder="Game Name" ng-model="MC.gameName" required>
+    <input type="submit" value="Create Game">
+  </form>
+  <h3>Existing Games</h3>
+  <div ng-repeat="game in MC.allGames" class="multiGame">
+    <h3>{{game.name}}</h3>
+    <p ng-repeat="player in game.users">{{player.username}}</p>
+    <button ng-hide = "game.joined" ng-click="MC.join(game.id)">Join Game</button>
+    <button ng-show="game.joined" ng-click="MC.go(game)">Go to Staging Area</button>
+  </div>
+</div>
