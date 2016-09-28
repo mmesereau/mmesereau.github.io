@@ -1,4 +1,3 @@
-<div class="col-md-4 pull-right">
   <table>
     <tr>
       <td>Name</td>
@@ -6,11 +5,10 @@
       <td ng-click="LC.losses()">Losses</td>
       <td ng-click="LC.percentage()">Win Percentage</td>
     </tr>
-    <tr ng-repeat="leader in LC.leaders">
+    <tr ng-repeat="leader in LC.leaders | limitTo: 5">
       <td>{{leader.nickname}}</td>
       <td>{{leader.wins}}</td>
       <td>{{leader.losses}}</td>
       <td>{{leader.wins / (leader.wins + leader.losses) | number:2}}</td>
     </tr>
   </table>
-</div>

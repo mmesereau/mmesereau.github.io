@@ -10,14 +10,14 @@
       <input type="radio" value="5" ng-model="PC.players">
       <h3>6</h3>
       <input type="radio" value="6" ng-model="PC.players">
-      <input type="submit" value="GO!">
+      <input type="submit" value="GO!" ng-disabled="!PC.players">
     </form>
   </div>
   <div class="col-xs-6" ng-show="PC.pnpinit">
     <h3>Name Yourself!</h3>
     <div ng-repeat="player in game.playerNames track by $index">
-      <input type="text" ng-model="game.playerNames[$index]" placeholder="Player {{$index + 1}}">
+      <input type="text" ng-model="game.playerNames[$index]" placeholder="Player {{$index + 1}}" ng-keyup="PC.nameTest()">
     </div>
-    <button ng-click="PC.startGame()">Begin Game!</button>
+    <button ng-click="PC.startGame()" ng-disabled="!PC.filled">Begin Game!</button>
   </div>
 </div>

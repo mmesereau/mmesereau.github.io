@@ -77,91 +77,91 @@ app.controller("LeaderboardController", ['LeaderboardService', '$state', '$http'
   };
 }]);
 
-app.controller("MultiplayerController", ['$state', '$http', '$scope', function($state, $http, $scope) {
-  var vm = this;
-  vm.numberOfPlayers = 4;
-  vm.getGames = function() {
-    $http.get('http://phantom-mmesereau.herokuapp.com/multiplayer')
-    .then(function(data) {
-      vm.allGames = data.data;
-      for (var i = 0; i < vm.allGames.length; i++) {
-        for (var j = 0; j < vm.allGames[i].users.length; j++) {
-          if (vm.allGames[i].users[j].id === $scope.profile.id) {
-            vm.allGames[i].joined = true;
-          }
-        }
-      }
-    })
-    .catch(function(err) {
-      console.log(err);
-    });
-  };
-  vm.getGames();
-  vm.addGame = function() {
-    $http.post('http://phantom-mmesereau.herokuapp.com/multiplayer', {name: vm.gameName, id: $scope.profile.id})
-    .then(function() {
-      vm.gameName = "";
-      vm.newGame = false;
-      vm.getGames();
-    })
-    .catch(function(err) {
-      console.log(err);
-    });
-  };
-  vm.join = function(id) {
-    $http.post('http://phantom-mmesereau.herokuapp.com/multiplayer/join', {games_id: id, users_id: $scope.profile.id})
-    .then(function() {
-      vm.getGames();
-    })
-    .catch(function(err) {
-      console.log(err);
-    });
-  };
-  vm.go = function(game) {
-    $scope.game.game = game;
-    $state.go('staging', {game_name: game.name});
-  };
-}]);
-
-app.controller("StagingController", ['$state', '$stateParams', '$scope', function($state, $stateParams, $scope) {
-  var vm = this;
-  vm.gameName = $stateParams.game_name;
-  vm.presentPlayers = [];
-  var client = deepstream('localhost:6020');
-  client.login({username: $scope.profile.nickname});
-  var record = client.record.getRecord('word');
-  record.set('presentPlayers', $scope.profile.nickname);
-  record.subscribe('presentPlayers', function(value) {
-    $scope.$apply(vm.presentPlayers.push(value));
-    vm.newPlayer();
-  });
-  vm.newPlayer = function() {
-    vm.numberOfPlayersPresent = 0;
-    for (var i = 0; i < vm.presentPlayers.length; i++) {
-      for (var j = 0; j < $scope.game.game.users.length; j++) {
-        if ($scope.game.game.users[j].username === vm.presentPlayers[i]) {
-          vm.numberOfPlayersPresent++;
-        }
-      }
-    }
-    if (vm.numberOfPlayersPresent === /*TODO$scope.game.game.users.length*/2) {
-      $scope.$apply(vm.allPlayersPresent = true);
-      $scope.$apply(vm.countdown = 5);
-      $scope.setCountdown = setInterval(function() {
-        $scope.$apply(vm.countdown--);
-        if (vm.countdown === 0) {
-          vm.begin();
-        }
-      }, 1000);
-    }
-  };
-  vm.begin = function() {
-    clearInterval($scope.setCountdown);
-    $scope.game.playerNames = vm.presentPlayers;
-    $scope.game.type = 'multiplayer';
-    $state.go('game');
-  };
-}]);
+// app.controller("MultiplayerController", ['$state', '$http', '$scope', function($state, $http, $scope) {
+//   var vm = this;
+//   vm.numberOfPlayers = 4;
+//   vm.getGames = function() {
+//     $http.get('http://phantom-mmesereau.herokuapp.com/multiplayer')
+//     .then(function(data) {
+//       vm.allGames = data.data;
+//       for (var i = 0; i < vm.allGames.length; i++) {
+//         for (var j = 0; j < vm.allGames[i].users.length; j++) {
+//           if (vm.allGames[i].users[j].id === $scope.profile.id) {
+//             vm.allGames[i].joined = true;
+//           }
+//         }
+//       }
+//     })
+//     .catch(function(err) {
+//       console.log(err);
+//     });
+//   };
+//   vm.getGames();
+//   vm.addGame = function() {
+//     $http.post('http://phantom-mmesereau.herokuapp.com/multiplayer', {name: vm.gameName, id: $scope.profile.id})
+//     .then(function() {
+//       vm.gameName = "";
+//       vm.newGame = false;
+//       vm.getGames();
+//     })
+//     .catch(function(err) {
+//       console.log(err);
+//     });
+//   };
+//   vm.join = function(id) {
+//     $http.post('http://phantom-mmesereau.herokuapp.com/multiplayer/join', {games_id: id, users_id: $scope.profile.id})
+//     .then(function() {
+//       vm.getGames();
+//     })
+//     .catch(function(err) {
+//       console.log(err);
+//     });
+//   };
+//   vm.go = function(game) {
+//     $scope.game.game = game;
+//     $state.go('staging', {game_name: game.name});
+//   };
+// }]);
+//
+// app.controller("StagingController", ['$state', '$stateParams', '$scope', function($state, $stateParams, $scope) {
+//   var vm = this;
+//   vm.gameName = $stateParams.game_name;
+//   vm.presentPlayers = [];
+//   var client = deepstream('localhost:6020');
+//   client.login({username: $scope.profile.nickname});
+//   var record = client.record.getRecord('word');
+//   record.set('presentPlayers', $scope.profile.nickname);
+//   record.subscribe('presentPlayers', function(value) {
+//     $scope.$apply(vm.presentPlayers.push(value));
+//     vm.newPlayer();
+//   });
+//   vm.newPlayer = function() {
+//     vm.numberOfPlayersPresent = 0;
+//     for (var i = 0; i < vm.presentPlayers.length; i++) {
+//       for (var j = 0; j < $scope.game.game.users.length; j++) {
+//         if ($scope.game.game.users[j].username === vm.presentPlayers[i]) {
+//           vm.numberOfPlayersPresent++;
+//         }
+//       }
+//     }
+//     if (vm.numberOfPlayersPresent === /*TODO$scope.game.game.users.length*/2) {
+//       $scope.$apply(vm.allPlayersPresent = true);
+//       $scope.$apply(vm.countdown = 5);
+//       $scope.setCountdown = setInterval(function() {
+//         $scope.$apply(vm.countdown--);
+//         if (vm.countdown === 0) {
+//           vm.begin();
+//         }
+//       }, 1000);
+//     }
+//   };
+//   vm.begin = function() {
+//     clearInterval($scope.setCountdown);
+//     $scope.game.playerNames = vm.presentPlayers;
+//     $scope.game.type = 'multiplayer';
+//     $state.go('game');
+//   };
+// }]);
 
 app.controller("PassAndPlayController", ['$scope', '$state', function($scope, $state) {
   var vm = this;
@@ -172,8 +172,18 @@ app.controller("PassAndPlayController", ['$scope', '$state', function($scope, $s
     }
     vm.pnpinit = true;
   };
+  vm.nameTest = function() {
+    vm.filled = true;
+    for (var i = 0; i < $scope.game.playerNames.length; i++) {
+      if ($scope.game.playerNames[i] === "") {
+        vm.filled = false;
+      }
+    }
+
+  };
   vm.startGame = function() {
     $scope.game.type = 'pass';
+    $scope.game.inProgress = true;
     $state.go('game');
   };
 }]);
@@ -182,14 +192,14 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
   var vm = this;
   vm.$state = $state;
   vm.startGame = function() {
-    $scope.game.inProgress = true;
       var newGame = new Phaser.Game($(window).width(), $(window).height(), Phaser.CANVAS, '', { preload: preload, create: create, update: update, render: render });
 
-      var map, layer, sprites, line, turn, basic_attack, special_attack, avatarWidth, avatarHeight, turnsWithoutDamage, move, shield, extra_turn, dig, capsule, log, turn_text, lava_done, capsules, flicker, time, notification, note, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver;
+      var map, layer, sprites, line, turn, basic_attack, special_attack, avatarWidth, avatarHeight, move, shield, extra_turn, dig, capsule, log, turn_text, lava_done, capsules, time, notification, note, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver;
       var players = [];
       var notifications = [];
       var notificationLog = [];
       var avatars = [];
+      var turnsWithoutDamage = 0;
       function preload () {
         newGame.load.tilemap('map', 'assets/tilemaps/maps/tile_properties.json', null, Phaser.Tilemap.TILED_JSON);
         newGame.load.image('tiles', 'assets/tilemaps/tiles/gridtiles.png');
@@ -236,6 +246,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         line = new Phaser.Line(players[0].x, players[0].y, players[0].x, players[0].y);
         buttons=[basic_attack, special_attack, shield, move, capsule, dig, extra_turn, gameOver];
         buttonsShow = true;
+        notifications.push(newGame.add.text(newGame.world.centerX, newGame.world.centerY, "Let the game begin!", {font: '64px Arial', fill: 'white'}));
         layer.resizeWorld();
         map.setCollisionBetween(6, 34);
         newGame.physics.p2.convertTilemap(map, layer);
@@ -260,7 +271,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           // avatars[i].width = avatarWidth / 4;
           // avatars[i].height = avatarWidth / 4;
           avatars[i].title = players[i].key;
-          avatars[i].name = avatars[i].addChild(newGame.add.text(0, avatarHeight / 2, players[i].key, {fill: "white", font: "18px Arial"}))
+          avatars[i].name = avatars[i].addChild(newGame.add.text(0, avatarHeight / 2, players[i].key, {fill: "white", font: "18px Arial"}));
           avatars[i].healthbar = avatars[i].addChild(newGame.make.sprite(avatarWidth / 3, 0, 'healthbar'));
           avatars[i].healthbar.width = avatarWidth / 2;
           avatars[i].healthbar.height = avatarHeight / 12;
@@ -307,14 +318,9 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         // }
         turn = 0;
         capsules = ['health', 'wand', 'lava', 'death', 'wand', 'health'];
-        notification = newGame.add.text(newGame.world.centerX, newGame.world.centerY, "Let the game begin!", {font: '64px Arial', fill: 'white'});
         gameOverNotification = newGame.add.text(newGame.world.centerX, newGame.world.centerY, "", {font: '75px Arial', fill: 'white'});
-        note = setInterval(function() {
-          notification.fontSize++;
-          notification.x = newGame.world.centerX - notification.width / 2;
-          notification.y = newGame.world.centerY - notification.height / 2;
-        }, 1);
         generateMap();
+        notify();
       }
 
       function update() {
@@ -331,7 +337,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             }
           }
           if (turn % players.length === i) {
-            playerWhoseTurnItIs = players[i].key;
+            playerWhoseTurnItIs = players[i];
             players[i].turn = true;
             turn_text.text = players[i].key + "\'s Turn";
             players[i].height = 30;
@@ -364,9 +370,10 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           }
         }
         if (Date.now() > time + 1000) {
-          flicker = 0;
           for (i = 0; i < players.length; i++) {
             players[i].visible = true;
+            clearInterval(players[i].flicker);
+            players[i].flicker = 0;
           }
         }
         if (newGame.input.activePointer.y > $(window).height() - avatarHeight) {
@@ -381,18 +388,18 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             }
           }
         }
-        if (notification.fontSize > 180) {
-          clearInterval(note);
+        if (notifications[0] && notifications[0].width > $(window).width()) {
+          clearInterval(notifications[0].note);
           // note = 0;
-          notification.text = "";
-          notification.fontSize = 64;
+          notifications[0].text = "";
+          notifications[0].fontSize = 64;
           notifications.splice(0, 1);
           if (notifications.length > 0) {
             notify();
           }
         }
         for (i = 0; i < buttons.length; i++) {
-          if (newGame.input.activePointer.x < buttons[i].x || newGame.input.activePointer.y > buttons[2].y + buttons[2].height || !buttonsShow/* || ($scope.game.type === 'multiplayer' && playerWhoseTurnItIs !== $scope.profile.nickname)*/) {
+          if (newGame.input.activePointer.x < buttons[i].x || newGame.input.activePointer.y > buttons[2].y + buttons[2].height || !buttonsShow/* || ($scope.game.type === 'multiplayer' && playerWhoseTurnItIs !== $scope.profile.nickname)*/ || (buttons[i] === extra_turn && playerWhoseTurnItIs.wand === 0 && playerWhoseTurnItIs.sap < 3) || ((buttons[i] === shield || buttons[i] === special_attack) && playerWhoseTurnItIs.wand === 0 && playerWhoseTurnItIs.sap < 2)) {
             buttons[i].visible = false;
           }
           else {
@@ -408,9 +415,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         if (digLine) {
           digLine.setTo(digLine.start.x, digLine.start.y, newGame.input.activePointer.x, newGame.input.activePointer.y);
         }
-        if (players.length === 1) {
-          winner();
-        }
       }
 
       function do_capsule() {
@@ -424,7 +428,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         var tile = map.getTile(x, y, 'Tile Layer 1', true);
         if (tile.index === 34) {
           var index = Math.floor(Math.random() * capsules.length);
-          notify(playerWhoseTurnItIs + " opens a " + capsules[index] + " capsule.");
+          notify(playerWhoseTurnItIs.key + " opens a " + capsules[index] + " capsule.");
           if (capsules[index] === 'lava') {
             lava();
           }
@@ -560,8 +564,9 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
               players[i].extra_turn = true;
               players[i].sap -= 3;
             }
-            else {
-              alert("You do not have the Special Points necessary to do this.");
+            if (players[i].wand > 0) {
+              players[i].extra_turn = true;
+              players[i].wand--;
             }
           }
         }
@@ -684,10 +689,10 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
               //   sendInfo();
               // }
               lavaTest();
-              turn++;
               turnsWithoutDamage++;
               console.log(turnsWithoutDamage, players.length);
-              turn = turn % players.length;
+              turn = i;
+              turn++;
               if (players.length === 2 || Math.floor(Math.random() * 10) === 3) {
                 if (players.length === 2) {
                   removeBarriers();
@@ -770,7 +775,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           }
         }
         if (bool) {
-          notify("If you won't attack each other, then he will!")
+          notify("If you won't attack each other,\n then HE WILL!");
         }
       }
 
@@ -778,7 +783,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         for (var i = 0; i < players.length; i++) {
           players[i].reset(Math.floor(Math.random() * $(window).width()), Math.floor(Math.random() * $(window).height()));
         }
-        notify("SHUFFLE!");
+        notify("The Phantom tires of your \n locations and changes them!");
       }
 
       function lavaTest() {
@@ -809,17 +814,34 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           target.hp -= amt;
           time = Date.now();
           notify(target.key + " takes " + amt + " damage.");
-          flicker = setInterval(function() {
+          target.flicker = setInterval(function() {
             target.visible = !target.visible;
           }, 100);
         }
         if (target.hp <= 0) {
-          notify(target.key + " dies.");
+          notify(target.key + " has tragically perished.");
           levelUp();
           target.visible = false;
           target.width = 0;
+          for (var i = 0; i < avatars.length; i++) {
+            if (avatars[i].title === target.key) {
+              avatars[i].visible = false;
+            }
+          }
+
+          // for (var i = 0; i < players.length; i++) {
+          //   if (players[i].turn) {
+          //     if (players[i + 1].key !== target.key) {
+          //       turn--;
+          //     }
+          //   }
+          // }
           target.kill();
           players.splice(players.indexOf(target), 1);
+          $http.post('https://phantom-mmesereau.herokuapp.com/loss', {nickname: target.key});
+          if (players.length === 1) {
+            winner();
+          }
         }
       }
 
@@ -827,7 +849,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         for (var i = 0; i < players.length; i++) {
           if (players[i].turn) {
             if (players[i].hp !== 0) {
-              notify(players[i].key + " levels up!");
+              notify(players[i].key + " absorbs some power!");
             }
             players[i].hp += 2;
             players[i].maxhp += 2;
@@ -877,24 +899,44 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
 
       function notify(string) {
         if (string) {
-          notifications.push(string);
+          notifications.push(newGame.add.text(newGame.world.centerX, newGame.world.centerY, string, {font: '12px Arial', fill: 'white'}));
           notificationLog.push(string);
-          while (notificationLog.length > 4) {
+          if (notificationLog.length > 8) {
             notificationLog.splice(0, 1);
           }
         }
-        notification.text = notifications[0];
+        if (notifications.length > 1) {
+          for (var i = 1; i < notifications.length; i++) {
+            notifications[i].visible = false;
+          }
+        }
+        if (notifications[0]) {
+          notifications[0].visible = true;
+        }
         log.text = "";
         for (var i = 0; i < notificationLog.length; i++) {
           log.text += notificationLog[i] + "\n";
         }
-        notification.fontSize = 28;
-        note = setInterval(function() {
-          notification.fontSize++;
-          notification.x = newGame.world.centerX - notification.width / 2;
-          notification.y = newGame.world.centerY - notification.height / 2;
-        }, 15);
+        if (notifications[0]) {
+          notifications[0].note = setInterval(function() {
+            notifications[0].fontSize++;
+            notifications[0].x = newGame.world.centerX - notifications[0].width / 2;
+            notifications[0].y = newGame.world.centerY - notifications[0].height / 2;
+          }, 30);
+        }
       }
+
+      // if (notification.fontSize > 180) {
+      //   clearInterval(note);
+      //   // note = 0;
+      //   notification.text = "";
+      //   notification.fontSize = 64;
+      //   notifications.splice(0, 1);
+      //   if (notifications.length > 0) {
+      //     notify();
+      //   }
+      // }
+
 
       function winner() {
         gameOverNotification.text = players[0].key + " has emerged victorious.  \nCongratulations, " + players[0].key + "!";
@@ -907,17 +949,8 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             $scope.game.playerNames.splice(i, 1);
           }
         }
-        $http.post('http://phantom-mmesereau.herokuapp.com/win', {nickname: players[0].key})
-        .then(function() {
-          var output = [];
-          for (i = 0; i < $scope.game.playerNames.length; i++) {
-            output.push($http.post('http://phantom-mmesereau.herokuapp.com/loss', {nickname: $scope.game.playerNames[i]}));
-          }
-          return Promise.all(output);
-        })
-        .catch(function(err) {
-          console.log(err);
-        });
+        console.log(players[0].key + " wins.");
+        $http.post('http://phantom-mmesereau.herokuapp.com/win', {nickname: players[0].key});
         buttons.splice(buttons.indexOf(gameOver), 1);
         gameOver.visible = true;
       }
@@ -929,7 +962,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           $state.go('home');
         };
     };
-    if ($scope.game.type === 'pass') {
+    if ($scope.game.type === 'pass' && $scope.game.inProgress) {
       vm.startGame();
     }
     // if ($scope.game.type === 'multiplayer') {

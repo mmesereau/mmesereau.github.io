@@ -16,6 +16,21 @@ li {
   color: white;
 }
 
+td {
+  color: white;
+  font-size: 36px;
+  text-align: center;
+  padding: 30px;
+}
+
+table {
+  width: 100%;
+}
+
+tr {
+  width: 100%;
+}
+
 textarea {
   background-color: transparent;
   border-width: 0px;
@@ -26,11 +41,10 @@ textarea {
 
 .playButton {
   height: 35%;
-  width: 45%;
+  width: 75%;
   margin-top: 35%;
   font-size: 36px;
 }
-
 
 .multiGame {
   border: 1px solid white;

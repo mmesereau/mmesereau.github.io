@@ -18,8 +18,8 @@
           <nav class="navbar navbar-header navbar-static-top">
             <div class="container">
               <div class="navbar-header">
-                <button ui-sref="leaderboard">Leaders</button>
-                <button ui-sref="home">Home</button>
+                <button ui-sref="leaderboard" class="navbutton">Leaders</button>
+                <button ui-sref="home" class="navbutton">Home</button>
               </div>
             </div>
           </nav>
@@ -27,13 +27,13 @@
             <h1>Welcome to Phantom!</h1>
           </div>
           <div class="row">
-            <div class="col-md-8 button-div">
+            <div class="col-md-5 button-div">
               <button ui-sref="pnp" class="playButton">Start Game!</button>
               <!-- <button ng-show="HC.loggedIn" ui-sref="multiplayer">Multiplayer</button> -->
               <!-- <button ng-show="!HC.loggedIn" ui-sref="login">Log In</button>
               <button ng-show="HC.loggedIn" ng-click="HC.logout()">Log Out</button> -->
             </div>
-            <div ui-view class="col-md-4"></div>
+            <div ui-view class="col-md-7"></div>
           </div>
         </div>
 
