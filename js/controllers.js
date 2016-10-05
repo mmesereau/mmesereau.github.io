@@ -22,7 +22,7 @@ app.controller('HomeController', ['HomeService', '$state', '$window', '$scope', 
       location++;
       textarea.scrollTop(location);
     }
-  }, 40);
+  }, 30);
 
   vm.logout = function() {
     delete $window.localStorage.token;
@@ -194,7 +194,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
   vm.startGame = function() {
       var newGame = new Phaser.Game($(window).width(), $(window).height(), Phaser.CANVAS, '', { preload: preload, create: create, update: update, render: render });
 
-      var map, layer, sprites, line, turn, basic_attack, special_attack, avatarWidth, avatarHeight, move, shield, extra_turn, dig, capsule, log, turn_text, lava_done, capsules, time, notification, note, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver;
+      var map, layer, action_text, sprites, line, turn, basic_attack, special_attack, avatarWidth, avatarHeight, move, shield, extra_turn, dig, capsule, log, turn_text, lava_done, capsules, time, notification, note, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver;
       var players = [];
       var notifications = [];
       var notificationLog = [];
@@ -233,26 +233,27 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           players.push(newGame.add.sprite(Math.floor(Math.random() * $(window).width()), Math.floor(Math.random() * $(window).height()), sprites[decision]));
           avatars.push(newGame.add.sprite(0, 0));
         }
-        basic_attack = newGame.add.button($(window).width() - 200, 200, 'basic_attack', do_basic_attack, this);
-        special_attack = newGame.add.button($(window).width() - 200, 250, 'special_attack', do_special_attack, this);
-        shield = newGame.add.button($(window).width() - 200, 300, 'shield', do_shield, this);
-        move = newGame.add.button($(window).width() - 200, 150, 'move', do_move, this);
-        capsule = newGame.add.button($(window).width() - 200, 50, 'capsule', do_capsule, this);
-        dig = newGame.add.button($(window).width() - 200, 100, 'dig', do_dig, this);
-        extra_turn = newGame.add.button($(window).width() - 200, 0, 'extra_turn', do_extra_turn, this);
+        // basic_attack = newGame.add.button($(window).width() - 200, 200, 'basic_attack', do_basic_attack, this);
+        // special_attack = newGame.add.button($(window).width() - 200, 250, 'special_attack', do_special_attack, this);
+        // shield = newGame.add.button($(window).width() - 200, 300, 'shield', do_shield, this);
+        // move = newGame.add.button($(window).width() - 200, 150, 'move', do_move, this);
+        // capsule = newGame.add.button($(window).width() - 200, 50, 'capsule', do_capsule, this);
+        // dig = newGame.add.button($(window).width() - 200, 100, 'dig', do_dig, this);
+        // extra_turn = newGame.add.button($(window).width() - 200, 0, 'extra_turn', do_extra_turn, this);
         turn_text = newGame.add.text(0, 0, "Filler Text", {font: "40px Arial", fill: "white"});
+        action_text = newGame.add.text(0, 0, "", {font: "40px Arial", fill: "white"});
         log = newGame.add.text(0, 45, "", {font: "30px Arial", fill: "white"});
         gameOver = newGame.add.button($(window).width() - 400, 0, 'gameover', endGame, this);
         line = new Phaser.Line(players[0].x, players[0].y, players[0].x, players[0].y);
         buttons=[basic_attack, special_attack, shield, move, capsule, dig, extra_turn, gameOver];
         buttonsShow = true;
-        notifications.push(newGame.add.text(newGame.world.centerX, newGame.world.centerY, "Let the game begin!", {font: '64px Arial', fill: 'white'}));
         layer.resizeWorld();
         map.setCollisionBetween(6, 34);
         newGame.physics.p2.convertTilemap(map, layer);
         newGame.physics.p2.gravity.y = 0;
         newGame.physics.p2.enable(line);
         for (i = 0; i < players.length; i++) {
+          var pointer = players[i];
           newGame.physics.p2.enable(players[i]);
           players[i].key = $scope.game.playerNames[i];
           players[i].turn = false;
@@ -263,13 +264,23 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           players[i].shield = 0;
           players[i].wand = 0;
           players[i].hoverName = players[i].addChild(newGame.add.text(-50, 0, players[i].key, {fill: "white", font: "18px Arial"}));
+          players[i].healthChange = players[i].addChild(newGame.add.text(0, -50, "", {fill: "red", font: "18px Arial"}));
+          players[i].showDamage = function(dmg) {
+            if (dmg < 0) {
+              this.healthChange.style.fill = "red";
+            }
+            else {
+              this.healthChange.style.fill = "green";
+            }
+            this.healthChange.text = dmg;
+            this.healthChange.style.font = "18px Arial";
+            animateDamage(this);
+          };
         }
         for (i = 0; i < avatars.length; i++) {
           avatarWidth = $(window).width() / avatars.length;
           avatarHeight = $(window).height() * 0.2;
           avatars[i].reset(avatarWidth * i, $(window).height() - avatarHeight);
-          // avatars[i].width = avatarWidth / 4;
-          // avatars[i].height = avatarWidth / 4;
           avatars[i].title = players[i].key;
           avatars[i].name = avatars[i].addChild(newGame.add.text(0, avatarHeight / 2, players[i].key, {fill: "white", font: "18px Arial"}));
           avatars[i].healthbar = avatars[i].addChild(newGame.make.sprite(avatarWidth / 3, 0, 'healthbar'));
@@ -320,7 +331,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         capsules = ['health', 'wand', 'lava', 'death', 'wand', 'health'];
         gameOverNotification = newGame.add.text(newGame.world.centerX, newGame.world.centerY, "", {font: '75px Arial', fill: 'white'});
         generateMap();
-        notify();
+        newGame.input.onDown.add(action, this);
       }
 
       function update() {
@@ -357,6 +368,12 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           if (Math.abs(players[i].x - newGame.input.activePointer.x) < players[i].width / 2 && Math.abs(players[i].y - newGame.input.activePointer.y) < players[i].height / 2) {
             players[i].hoverName.visible = true;
           }
+          if (players[i].healthChange.size <= 0) {
+            clearInterval(players[i].animation);
+            players[i].animation = 0;
+            players[i].healthChange.x = 0;
+            players[i].healthChange.y = -50;
+          }
         }
         for (var i = 0; i < avatars.length; i++) {
           var stillAlive = false;
@@ -388,24 +405,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             }
           }
         }
-        if (notifications[0] && notifications[0].width > $(window).width()) {
-          clearInterval(notifications[0].note);
-          // note = 0;
-          notifications[0].text = "";
-          notifications[0].fontSize = 64;
-          notifications.splice(0, 1);
-          if (notifications.length > 0) {
-            notify();
-          }
-        }
-        for (i = 0; i < buttons.length; i++) {
-          if (newGame.input.activePointer.x < buttons[i].x || newGame.input.activePointer.y > buttons[2].y + buttons[2].height || !buttonsShow/* || ($scope.game.type === 'multiplayer' && playerWhoseTurnItIs !== $scope.profile.nickname)*/ || (buttons[i] === extra_turn && playerWhoseTurnItIs.wand === 0 && playerWhoseTurnItIs.sap < 3) || ((buttons[i] === shield || buttons[i] === special_attack) && playerWhoseTurnItIs.wand === 0 && playerWhoseTurnItIs.sap < 2)) {
-            buttons[i].visible = false;
-          }
-          else {
-            buttons[i].visible = true;
-          }
-        }
         if (newGame.input.activePointer.x > log.left && newGame.input.activePointer.x < log.right && newGame.input.activePointer.y > log.top && newGame.input.activePointer.y < log.bottom) {
           log.visible = false;
         }
@@ -417,12 +416,35 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
       }
 
-      function do_capsule() {
-        buttonsShow = false;
-        newGame.input.onDown.addOnce(do_capsule_2, this);
+      function action() {
+        var x = Math.ceil(newGame.input.activePointer.x / 32 - 1);
+        var y = Math.ceil(newGame.input.activePointer.y / 32 - 1);
+        var tile = map.getTile(x, y, 'Tile Layer 1', true);
+        if (tile.index === 34) {
+          do_capsule();
+        }
+        else if (tile.index !== 6) {
+          var done = false;
+          for (var i = 0; i < players.length; i++) {
+            if (Math.abs(newGame.input.activePointer.x - players[i].x) < players[i].width / 2 && Math.abs(newGame.input.activePointer.y - players[i].y) < players[i].height / 2) {
+              if (players[i].turn) {
+                done = true;
+                //TODO: SHIELD, DIG, EXTRA TURN
+              }
+              else if (players[i].target) {
+                done = true;
+                do_attack();
+              }
+            }
+          }
+          if (!done) {
+            do_move();
+          }
+        }
       }
 
-      function do_capsule_2() {
+
+      function do_capsule() {
         var x = Math.ceil(newGame.input.activePointer.x / 32 - 1);
         var y = Math.ceil(newGame.input.activePointer.y / 32 - 1);
         var tile = map.getTile(x, y, 'Tile Layer 1', true);
@@ -451,6 +473,8 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       function health() {
         for (var i = 0; i < players.length; i++) {
           if (players[i].turn) {
+            var healAmt = players[i].maxhp - players[i].hp;
+            players[i].showDamage(healAmt);
             players[i].hp = players[i].maxhp;
             players[i].sap = players[i].maxsap;
             var x = Math.ceil(newGame.input.activePointer.x / 32 - 1);
@@ -541,13 +565,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         nextTurn();
       }
 
-
       function do_move() {
-        buttonsShow = false;
-        newGame.input.onDown.addOnce(do_move_2, this);
-      }
-
-      function do_move_2() {
         buttonsShow = true;
         for (var i = 0; i < players.length; i++) {
           if (players[i].turn) {
@@ -572,49 +590,24 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
       }
 
-      function do_basic_attack() {
-        buttonsShow = false;
-        newGame.input.onDown.addOnce(do_basic_attack_2, this);
-      }
 
-      function do_basic_attack_2() {
-        buttonsShow = true;
-        for (var i = 0; i < players.length; i++) {
-          if (players[i].target) {
-            doDamage(players[i], 1);
-            nextTurn();
-          }
-        }
-      }
-
-      function do_special_attack() {
-        for (var i = 0; i < players.length; i++) {
-          if (players[i].turn) {
-            if (players[i].sap >= 2 || (players[i].wand && players[i].wand > 0)) {
-              buttonsShow = false;
-              newGame.input.onDown.addOnce(do_special_attack_2, this);
-            }
-            else {
-              alert("You do not have the Special Points necessary to do this.");
-            }
-          }
-        }
-      }
-
-      function do_special_attack_2() {
-        buttonsShow = true;
+      function do_attack() {
         for (var i = 0; i < players.length; i++) {
           for (var j = 0; j < players.length; j++) {
-            if (players[i].target && players[j].turn) {
-              doDamage(players[i], 2);
-              if (players[j].wand && players[j].wand > 0) {
-                players[j].wand--;
+            if (players[i].turn && players[j].target) {
+              if (players[i].wand > 0) {
+                players[i].wand--;
+                doDamage(players[j], 2);
+              }
+              else if (players[i].sap >= 2) {
+                players[i].sap--;
+                doDamage(players[j], 2);
               }
               else {
-                players[j].sap -= 2;
+                doDamage(players[j], 1);
               }
-              nextTurn();
             }
+            nextTurn();
           }
         }
       }
@@ -622,14 +615,14 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       function do_shield() {
         for (var i = 0; i < players.length; i++) {
           if (players[i].turn) {
-            if (players[i].sap >= 2) {
-              players[i].shield = 2;
+            if (players[i].wand > 0) {
+              players[i].wand --;
+            }
+            else if (players[i].sap >= 2) {
               players[i].sap -= 2;
-              nextTurn();
             }
-            else {
-              alert("You do not have the Special Points necessary to do this.");
-            }
+            players[i].shield += 2;
+            nextTurn();
           }
         }
       }
@@ -690,7 +683,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
               // }
               lavaTest();
               turnsWithoutDamage++;
-              console.log(turnsWithoutDamage, players.length);
               turn = i;
               turn++;
               if (players.length === 2 || Math.floor(Math.random() * 10) === 3) {
@@ -754,6 +746,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
               notify("The Phantom has mercy and heals " + players[i].key + "!");
             }
             players[i].hp += 2;
+            players[i].showDamage(2);
             if (players[i].hp > players[i].maxhp) {
               players[i].hp = players[i].maxhp;
             }
@@ -812,6 +805,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
         if (amt > 0) {
           target.hp -= amt;
+          target.showDamage(-1 * amt);
           time = Date.now();
           notify(target.key + " takes " + amt + " damage.");
           target.flicker = setInterval(function() {
@@ -852,6 +846,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
               notify(players[i].key + " absorbs some power!");
             }
             players[i].hp += 2;
+            players[i].showDamage(2);
             players[i].maxhp += 2;
             players[i].sap += 3;
             players[i].maxsap += 3;
@@ -899,44 +894,25 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
 
       function notify(string) {
         if (string) {
-          notifications.push(newGame.add.text(newGame.world.centerX, newGame.world.centerY, string, {font: '12px Arial', fill: 'white'}));
           notificationLog.push(string);
           if (notificationLog.length > 8) {
             notificationLog.splice(0, 1);
           }
         }
-        if (notifications.length > 1) {
-          for (var i = 1; i < notifications.length; i++) {
-            notifications[i].visible = false;
-          }
-        }
-        if (notifications[0]) {
-          notifications[0].visible = true;
-        }
         log.text = "";
         for (var i = 0; i < notificationLog.length; i++) {
           log.text += notificationLog[i] + "\n";
         }
-        if (notifications[0]) {
-          notifications[0].note = setInterval(function() {
-            notifications[0].fontSize++;
-            notifications[0].x = newGame.world.centerX - notifications[0].width / 2;
-            notifications[0].y = newGame.world.centerY - notifications[0].height / 2;
-          }, 30);
-        }
       }
 
-      // if (notification.fontSize > 180) {
-      //   clearInterval(note);
-      //   // note = 0;
-      //   notification.text = "";
-      //   notification.fontSize = 64;
-      //   notifications.splice(0, 1);
-      //   if (notifications.length > 0) {
-      //     notify();
-      //   }
-      // }
-
+      function animateDamage(target) {
+        console.log(target.healthChange);
+        target.animation = setInterval(function() {
+          target.healthChange.fontSize--;
+          target.healthChange.x--;
+          target.healthChange.y -= 2;
+        }, 50);
+      }
 
       function winner() {
         gameOverNotification.text = players[0].key + " has emerged victorious.  \nCongratulations, " + players[0].key + "!";
