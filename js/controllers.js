@@ -906,7 +906,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       }
 
       function animateDamage(target) {
-        console.log(target.healthChange);
         target.animation = setInterval(function() {
           target.healthChange.fontSize--;
           target.healthChange.x--;
