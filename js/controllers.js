@@ -193,10 +193,8 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
   vm.$state = $state;
   vm.startGame = function() {
       var newGame = new Phaser.Game($(window).width(), $(window).height(), Phaser.CANVAS, '', { preload: preload, create: create, update: update, render: render });
-
-      var map, layer, action_text, sprites, line, turn, basic_attack, special_attack, avatarWidth, avatarHeight, move, shield, extra_turn, dig, capsule, log, turn_text, lava_done, capsules, time, notification, note, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver;
+      var map, layer, action_text, sprites, line, turn, avatarWidth, avatarHeight, shield, extra_turn, dig, log, turn_text, lava_done, capsules, time, buttons, buttonsShow, digLine, gameOverNotification, playerWhoseTurnItIs, gameOver, digInitiated;
       var players = [];
-      var notifications = [];
       var notificationLog = [];
       var avatars = [];
       var turnsWithoutDamage = 0;
@@ -235,25 +233,26 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
         // basic_attack = newGame.add.button($(window).width() - 200, 200, 'basic_attack', do_basic_attack, this);
         // special_attack = newGame.add.button($(window).width() - 200, 250, 'special_attack', do_special_attack, this);
-        // shield = newGame.add.button($(window).width() - 200, 300, 'shield', do_shield, this);
+        shield = newGame.add.button($(window).width() - 200, 300, 'shield', do_shield, this);
         // move = newGame.add.button($(window).width() - 200, 150, 'move', do_move, this);
         // capsule = newGame.add.button($(window).width() - 200, 50, 'capsule', do_capsule, this);
-        // dig = newGame.add.button($(window).width() - 200, 100, 'dig', do_dig, this);
-        // extra_turn = newGame.add.button($(window).width() - 200, 0, 'extra_turn', do_extra_turn, this);
+        dig = newGame.add.button($(window).width() - 200, 100, 'dig', do_dig, this);
+        extra_turn = newGame.add.button($(window).width() - 200, 0, 'extra_turn', do_extra_turn, this);
         turn_text = newGame.add.text(0, 0, "Filler Text", {font: "40px Arial", fill: "white"});
         action_text = newGame.add.text(0, 0, "", {font: "40px Arial", fill: "white"});
         log = newGame.add.text(0, 45, "", {font: "30px Arial", fill: "white"});
         gameOver = newGame.add.button($(window).width() - 400, 0, 'gameover', endGame, this);
         line = new Phaser.Line(players[0].x, players[0].y, players[0].x, players[0].y);
-        buttons=[basic_attack, special_attack, shield, move, capsule, dig, extra_turn, gameOver];
-        buttonsShow = true;
+        buttons=[shield, dig, extra_turn];
+        for (i = 0; i < buttons.length; i++) {
+          buttons[i].visible = false;
+        }
         layer.resizeWorld();
         map.setCollisionBetween(6, 34);
         newGame.physics.p2.convertTilemap(map, layer);
         newGame.physics.p2.gravity.y = 0;
         newGame.physics.p2.enable(line);
         for (i = 0; i < players.length; i++) {
-          var pointer = players[i];
           newGame.physics.p2.enable(players[i]);
           players[i].key = $scope.game.playerNames[i];
           players[i].turn = false;
@@ -264,16 +263,17 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           players[i].shield = 0;
           players[i].wand = 0;
           players[i].hoverName = players[i].addChild(newGame.add.text(-50, 0, players[i].key, {fill: "white", font: "18px Arial"}));
-          players[i].healthChange = players[i].addChild(newGame.add.text(0, -50, "", {fill: "red", font: "18px Arial"}));
+          players[i].healthChange = players[i].addChild(newGame.add.text(0, -50, "", {fill: "red", font: "60px Arial"}));
           players[i].showDamage = function(dmg) {
             if (dmg < 0) {
               this.healthChange.style.fill = "red";
             }
             else {
               this.healthChange.style.fill = "green";
+              dmg = "+" + dmg;
             }
             this.healthChange.text = dmg;
-            this.healthChange.style.font = "18px Arial";
+            this.healthChange.style.font = "60px Arial";
             animateDamage(this);
           };
         }
@@ -331,7 +331,7 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         capsules = ['health', 'wand', 'lava', 'death', 'wand', 'health'];
         gameOverNotification = newGame.add.text(newGame.world.centerX, newGame.world.centerY, "", {font: '75px Arial', fill: 'white'});
         generateMap();
-        newGame.input.onDown.add(action, this);
+        newGame.input.onDown.addOnce(action, this);
       }
 
       function update() {
@@ -368,11 +368,13 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           if (Math.abs(players[i].x - newGame.input.activePointer.x) < players[i].width / 2 && Math.abs(players[i].y - newGame.input.activePointer.y) < players[i].height / 2) {
             players[i].hoverName.visible = true;
           }
-          if (players[i].healthChange.size <= 0) {
+          if (players[i].healthChange.fontSize <= 20) {
             clearInterval(players[i].animation);
             players[i].animation = 0;
+            players[i].healthChange.text = "";
             players[i].healthChange.x = 0;
-            players[i].healthChange.y = -50;
+            players[i].healthChange.y =  -50;
+            players[i].healthChange.fontSize = 60;
           }
         }
         for (var i = 0; i < avatars.length; i++) {
@@ -414,6 +416,42 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         if (digLine) {
           digLine.setTo(digLine.start.x, digLine.start.y, newGame.input.activePointer.x, newGame.input.activePointer.y);
         }
+        if (map) {
+          updateActionText();
+        }
+      }
+
+      function updateActionText() {
+        var x = Math.ceil(newGame.input.activePointer.x / 32 - 1);
+        var y = Math.ceil(newGame.input.activePointer.y / 32 - 1);
+        var tile = map.getTile(x, y, 'Tile Layer 1', true);
+        if (tile && tile.index === 34 && !digInitiated) {
+          action_text.text = "Open Capsule";
+        }
+        else if (tile && tile.index !== 6) {
+          var done = false;
+          for (var i = 0; i < players.length; i++) {
+            if (Math.abs(newGame.input.activePointer.x - players[i].x) < players[i].width / 2 && Math.abs(newGame.input.activePointer.y - players[i].y) < players[i].height / 2) {
+              if (players[i].turn && !digInitiated) {
+                done = true;
+                action_text.text = "Options";
+                //TODO: SHIELD, DIG, EXTRA TURN
+              }
+              else if (players[i].target && !digInitiated) {
+                done = true;
+                action_text.text = "Attack " + players[i].key;
+              }
+            }
+          }
+          if (!done) {
+            action_text.text = "Move";
+          }
+        }
+        else {
+          action_text.text = "";
+        }
+        action_text.x = newGame.input.activePointer.x;
+        action_text.y = newGame.input.activePointer.y;
       }
 
       function action() {
@@ -428,8 +466,9 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
           for (var i = 0; i < players.length; i++) {
             if (Math.abs(newGame.input.activePointer.x - players[i].x) < players[i].width / 2 && Math.abs(newGame.input.activePointer.y - players[i].y) < players[i].height / 2) {
               if (players[i].turn) {
+                newGame.input.onDown.removeAll(this);
                 done = true;
-                //TODO: SHIELD, DIG, EXTRA TURN
+                options();
               }
               else if (players[i].target) {
                 done = true;
@@ -441,6 +480,18 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             do_move();
           }
         }
+      }
+
+      function options() {
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].visible = true;
+        }
+        buttons[0].x = newGame.input.activePointer.x - buttons[0].width * 1.5;
+        buttons[0].y = newGame.input.activePointer.y;
+        buttons[1].x = newGame.input.activePointer.x - buttons[1].width * 0.5;
+        buttons[1].y = newGame.input.activePointer.y - buttons[1].height * 1.5;
+        buttons[2].x = newGame.input.activePointer.x + buttons[2].width * 0.5;
+        buttons[2].y = newGame.input.activePointer.y;
       }
 
 
@@ -543,18 +594,23 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       }
 
       function do_dig() {
-         buttonsShow = false;
+        digInitiated = true;
+        action_text.text = "Start Dig";
+         for (var i = 0; i < buttons.length; i++) {
+           buttons[i].visible = false;
+         }
         newGame.input.onDown.addOnce(do_dig_2, this);
       }
 
       function do_dig_2() {
+        action_text.text = "End Dig";
         digLine = new Phaser.Line(newGame.input.activePointer.x, newGame.input.activePointer.y, newGame.input.activePointer.x, newGame.input.activePointer.y);
         newGame.input.onDown.addOnce(do_dig_3, this);
       }
 
 
       function do_dig_3() {
-        buttonsShow = true;
+        digInitiated = false;
         var coords = digLine.coordinatesOnLine(1);
         for (var i = 1; i < coords.length; i++) {
           var x = Math.ceil(coords[i][0] / 32 - 1);
@@ -566,7 +622,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       }
 
       function do_move() {
-        buttonsShow = true;
         for (var i = 0; i < players.length; i++) {
           if (players[i].turn) {
             players[i].reset(newGame.input.activePointer.x, newGame.input.activePointer.y);
@@ -672,7 +727,11 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
       }
 
       function nextTurn() {
-        for (var i = 0; i < players.length; i++) {
+        newGame.input.onDown.add(action, this);
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].visible = false;
+        }
+        for (i = 0; i < players.length; i++) {
           if (players[i].turn) {
             if (players[i].extra_turn) {
               players[i].extra_turn = false;
@@ -703,7 +762,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
             }
           }
         }
-        buttonsShow = true;
       }
 
       // function sendInfo() {
@@ -863,11 +921,16 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         var x = $(window).width() / 32;
         var y = $(window).height() / 32;
         for (var i = 0; i < 6; i++) {
-          map.replace(1, 34, Math.floor(Math.random() * x), Math.floor(Math.random() * y), 1, 1);
+          var capX = Math.floor(Math.random() * x);
+          var capY = Math.floor(Math.random() * y);
+          var tile = map.getTile(capX, capY, 'Tile Layer 1', true);
+          if (tile) {
+            map.replace(1, 34, capX, capY, 1, 1);
+          }
         }
         for (i = 0; i < y; i++) {
           for (var j = 0; j < x; j++) {
-            var tile = map.getTile(j, i, 'Tile Layer 1', true);
+            tile = map.getTile(j, i, 'Tile Layer 1', true);
             if (tile) {
               if (Math.floor(Math.random() * 5) === 0) {
                 map.replace(1, 6, j, i, 1, 1);
@@ -926,7 +989,6 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         }
         console.log(players[0].key + " wins.");
         $http.post('http://phantom-mmesereau.herokuapp.com/win', {nickname: players[0].key});
-        buttons.splice(buttons.indexOf(gameOver), 1);
         gameOver.visible = true;
       }
 

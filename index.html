@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="css/styles.css">
     </head>
     <body ng-app="Phantom">
-      <div ng-controller="HomeController as HC">
+      <div ng-controller="HomeController as HC" id="all">
         <div class="container" ng-if="!game.inProgress">
           <nav class="navbar navbar-header navbar-static-top">
             <div class="container">
@@ -24,7 +24,7 @@
             </div>
           </nav>
           <div class="row">
-            <h1>Welcome to Phantom!</h1>
+            <h1 id="title">Welcome to Phantom!</h1>
           </div>
           <div class="row">
             <div class="col-md-5 button-div">
