@@ -44,6 +44,7 @@ textarea {
   width: 75%;
   margin-top: 35%;
   font-size: 36px;
+  cursor: url("./cursor.png"), auto;
 }
 
 .multiGame {

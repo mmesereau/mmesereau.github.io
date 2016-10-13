@@ -185,8 +185,10 @@ app.controller("PassAndPlayController", ['$scope', '$state', function($scope, $s
   vm.nameTest = function() {
     vm.filled = true;
     for (var i = 0; i < $scope.game.playerNames.length; i++) {
-      if ($scope.game.playerNames[i] === "") {
-        vm.filled = false;
+      for (var j = i + 1; j < $scope.game.playerNames.length; j++) {
+        if ($scope.game.playerNames[i] === "" || $scope.game.playerNames[j] === $scope.game.playerNames[i]) {
+          vm.filled = false;
+        }
       }
     }
 
@@ -355,10 +357,13 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         generateMap();
         //A cursor event that triggers when the cursor key is pressed
         newGame.input.onDown.addOnce(action, this);
+        $("canvas").css("cursor", "url(css/cursor.png), auto");
       }
 
       function update() {
         //This function is constantly running
+        //This sets the cursor to look like a target
+        $("canvas").css("cursor: url(../css/cursor.png), none");
         for (var i = 0; i < players.length; i++) {
           players[i].body.setZeroVelocity();
           for (var j = 0; j < avatars.length; j++) {
