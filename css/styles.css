@@ -1,5 +1,6 @@
 body {
-  background-image: url(phantom_open.png);
+  background-image: url(gridtiles.jpg);
+  cursor: url("./cursor.png") 12 12, auto;
 }
 
 h1 {
@@ -37,6 +38,7 @@ textarea {
   color: white;
   font-size: 45px;
   float: right;
+  cursor: url("./cursor.png") 12 12, auto;
 }
 
 .playButton {
@@ -44,7 +46,11 @@ textarea {
   width: 75%;
   margin-top: 35%;
   font-size: 36px;
-  cursor: url("./cursor.png"), auto;
+}
+
+button {
+  cursor: url("./cursor.png") 12 12, auto;
+
 }
 
 .multiGame {

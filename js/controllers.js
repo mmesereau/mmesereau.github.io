@@ -357,13 +357,12 @@ app.controller("GameController", ['$scope', '$state', '$http', function($scope, 
         generateMap();
         //A cursor event that triggers when the cursor key is pressed
         newGame.input.onDown.addOnce(action, this);
-        $("canvas").css("cursor", "url(css/cursor.png), auto");
       }
 
       function update() {
         //This function is constantly running
         //This sets the cursor to look like a target
-        $("canvas").css("cursor: url(../css/cursor.png), none");
+        $("canvas").css("cursor: url(../css/cursor.png) 12 12, none");
         for (var i = 0; i < players.length; i++) {
           players[i].body.setZeroVelocity();
           for (var j = 0; j < avatars.length; j++) {

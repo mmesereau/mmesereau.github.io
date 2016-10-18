@@ -24,11 +24,11 @@
             </div>
           </nav>
           <div class="row">
-            <h1 id="title">Welcome to Phantom!</h1>
+            <h1 id="title" >Welcome to Phantom!</h1>
           </div>
           <div class="row">
             <div class="col-md-5 button-div">
-              <button ui-sref="pnp" class="playButton">Start Game!</button>
+              <button ui-sref="pnp" class="playButton" ng-mouseover="style={'background':'url(css/button-background.jpg)', 'color':'white', 'background-size':'contain'}" ng-mouseleave="style={}" ng-style="style">Start Game!</button>
               <!-- <button ng-show="HC.loggedIn" ui-sref="multiplayer">Multiplayer</button> -->
               <!-- <button ng-show="!HC.loggedIn" ui-sref="login">Log In</button>
               <button ng-show="HC.loggedIn" ng-click="HC.logout()">Log Out</button> -->
@@ -47,6 +47,6 @@
     <script type="text/javascript" src="js/controllers.js"></script>
     <script type="text/javascript" src="js/factories.js"></script>
     <script type="text/javascript" src="js/services.js"></script>
-    <script src="https://cdn.rawgit.com/deepstreamIO/deepstream.io-client-js/master/dist/deepstream.min.js"></script>
+    <!-- <script src="https://cdn.rawgit.com/deepstreamIO/deepstream.io-client-js/master/dist/deepstream.min.js"></script> -->
     </body>
 </html>
